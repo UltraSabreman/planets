@@ -107,12 +107,14 @@
     <ResourceCompile Include="Resources.rc" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\src\MyCam.cpp" />
     <ClCompile Include="..\src\Controller.cpp" />
     <ClCompile Include="..\src\Planet.cpp" />
     <ClCompile Include="..\src\planetsApp.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\include\Resources.h" />
+    <ClInclude Include="..\src\MyCam.h" />
     <ClInclude Include="..\src\Controller.h" />
     <ClInclude Include="..\src\Planet.h" />
   </ItemGroup>

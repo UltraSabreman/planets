@@ -1,11 +1,18 @@
 #pragma once
 #include <cinder\app\AppNative.h>
-#include <vector>
+#include <cinder\Rand.h>
+#include <list>
 
 #include "Planet.h"
 
+//This is in m^3/(kg*s^2)
+#define G 6.67384e-11 
+//This modifier makes the force actualy noticble.
+#define FORCE_MUL 1e2
+
 using namespace ci;
 using namespace ci::app;
+using namespace std;
 
 class Controller {
 public:
@@ -14,9 +21,9 @@ public:
 	void update();
 	void draw();
 
+	void addRandomPlanet();
 private:
-	vector<Planet*> _planets;
+	list<Planet*> _planets;
 
-	Vec2f _massCenter;
-
+	Vec3f _massCenter;
 };
