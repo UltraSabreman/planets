@@ -24,7 +24,7 @@ private:
 void planetsApp::setup() {
 	
 	CameraPersp test;
-	test.setPerspective(90.0f, getWindowAspectRatio(), 3.0f, 60000.0f);
+	test.setPerspective(90.0f, getWindowAspectRatio(), 3.0f, 100000.0f);
 	mCam.setCam(test);
 
 	for (int i = 0; i < 10; i++)

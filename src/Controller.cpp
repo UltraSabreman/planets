@@ -21,7 +21,7 @@ void Controller::update() {
 			if (planet1->isColliding(planet2)) {
 				if (planet1->_mass > planet2->_mass) {
 					planet1->absorb(planet2);
-					planet1->_isDead = true;
+					planet2->_isDead = true;
 				}else { //do some sort of "bounce" if they are equal in mass?
 					planet2->absorb(planet1);
 					planet1->_isDead = false;
