@@ -52,6 +52,9 @@ void planetsApp::update() {
 
 void planetsApp::draw() {
 	gl::clear(Color(0, 0, 0)); 
+
+	gl::enableDepthRead();
+
 	gl::setMatrices(mCam.getCam());
 	gl::color(Color(255,0,0));
 	gl::drawSphere(Vec3f::zero(), 10);
