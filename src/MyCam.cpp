@@ -6,6 +6,7 @@ MyCam::MyCam() {
 
 MyCam::MyCam(const CameraPersp &inputInitCam) {
 	_initCam = _curCam = inputInitCam; 
+	updatePickingData();
 }
 
 void MyCam::mouseWheel(float wheelSpin) {
@@ -52,11 +53,46 @@ void MyCam::mouseDrag(Vec2f mousePos, bool isLeftDown, bool isRightDown) {
 			_curCam.setOrientation(_curCam.getOrientation() * Quatf(mU, deltaY) * Quatf(Vec3f::yAxis(), deltaX));
 		}
 		_oldMousePos = mousePos;
+		updatePickingData();
 }
 
+void MyCam::updatePickingData() {
+	CameraPersp camera = _curCam;
+
+	_viewPlane = (camera.getCenterOfInterestPoint() - camera.getEyePoint()).safeNormalized();
+	_viewWidth = _viewPlane.cross(camera.getWorldUp()).safeNormalized();
+	_viewHight = _viewWidth.cross(_viewPlane).safeNormalized();
+
+
+	// convert fovy to radians 
+	float rad = camera.getFov() * PI / 180;
+	float vLength = tan( rad / 2 ) * camera.getNearClip();
+	float hLength = vLength * camera.getAspectRatio();
+
+	_viewHight *= vLength;
+	_viewWidth *= hLength;
+}
+void MyCam::getPickingRay(Vec2f mousePos, Vec3f &rayPos, Vec3f &rayDir) {
+	// translate mouse coordinates so that the origin lies in the center
+	// of the view port
+	mousePos -= (getWindowBounds().getSize() / 2);
+
+	// scale mouse coordinates so that half the view port width and height
+	// becomes 1
+	mousePos /= (getWindowBounds().getSize() / 2);
+
+	// linear combination to compute intersection of picking ray with
+	// view port plane
+	rayPos = _curCam.getEyePoint() + _viewPlane*_curCam.getNearClip() + _viewWidth*mousePos.x - _viewHight*mousePos.y;
+
+	// compute direction of picking ray by subtracting intersection point
+	// with camera position
+	rayDir = rayPos - _curCam.getEyePoint();
+}
 const CameraPersp& MyCam::getCam() const { 
 	return _curCam; 
 }
 void MyCam::setCam(const CameraPersp &camIn ) { 
 	_curCam = camIn; 
+	updatePickingData();
 }	

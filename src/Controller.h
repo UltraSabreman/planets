@@ -21,6 +21,8 @@ public:
 	void update();
 	void draw();
 
+	Planet* pickPlanet(Vec3f startPos, Vec3f dir);
+
 	void addRandomPlanet();
 private:
 	list<Planet*> _planets;

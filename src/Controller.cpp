@@ -45,7 +45,8 @@ void Controller::update() {
 		}
 		 //set the force, make it visible.
 		//avgForce *= FORCE_MUL;
-		planet1->_force = avgForce;
+		
+		//planet1->_force = avgForce;
 	} 
 
 
@@ -69,5 +70,14 @@ void Controller::draw() {
 		gl::color(Color(0,0,255));
 		gl::drawCube(_massCenter, Vec3f(100,100,100));
 	}
+}
+
+Planet *Controller::pickPlanet(Vec3f startPos, Vec3f dir) {
+	for (Planet *planet : _planets) 
+		if (planet->isHitByRay(startPos, dir)) {
+			planet->hit = true;
+			return planet;
+		}
+	return NULL;
 }
 
