@@ -14,7 +14,8 @@ public:
 	void setup();
 	void mouseWheel(MouseEvent);	
 	void mouseDrag(MouseEvent);
-	void mouseDown(MouseEvent);
+	void mouseUp(MouseEvent);
+	void keyUp(KeyEvent);
 	void update();
 	void draw();
 
@@ -23,44 +24,86 @@ private:
 	Controller cont;
 	MyCam mCam;
 
-	Vec3f start, dir;
+	Planet *selected;
+	bool doubleClick, tracking, paused;
+	float lastClickTime;
+
+	Vec3f pos;
 };
 
 void planetsApp::setup() {
-	start = Vec3f::zero();
-	dir = Vec3f::zero();
+	pos = Vec3f::zero();
+	paused = false;
+	tracking = false;
+	doubleClick = false;
+	lastClickTime = 0;
+	selected = NULL;
 
 	CameraPersp test;
 	test.setPerspective(90.0f, getWindowAspectRatio(), 3.0f, 100000.0f);
 	mCam.setCam(test);
 
-	for (int i = 0; i < 10; i++)
+	for (int i = 0; i < 30; i++)
 		cont.addRandomPlanet();
 }
 
 void planetsApp::mouseDrag(MouseEvent event) {
 	mCam.mouseDrag(event.getPos(), event.isLeftDown(), event.isRightDown());
+	if (event.isRightDown() && tracking)
+		tracking = false;
 }
+
 void planetsApp::mouseWheel(MouseEvent event) {
 	mCam.mouseWheel(event.getWheelIncrement());
 }
-void planetsApp::mouseDown(MouseEvent event) {
-	if (event.isMiddleDown()) {
-		mCam.getPickingRay(event.getPos(), start, dir);
-		cont.pickPlanet(start, dir);
+
+void planetsApp::mouseUp(MouseEvent event) {
+	if (event.isLeft()) {
+		float curTime = getElapsedSeconds();
+		if (curTime - lastClickTime <= 0.25 && !doubleClick) {
+			Vec3f start, dir;
+			mCam.getPickingRay(event.getPos(), start, dir);
+			selected = cont.pickPlanet(start, dir);
+
+			if (selected) 
+				tracking = true;
+			else if (!selected && tracking)
+				tracking = false;
+		}else 
+			doubleClick = false;
+
+		lastClickTime = curTime;
 	}
+	
+	if(event.isRight() && selected) {
+		mCam.test(event.getPos(), pos);
+		//pos = selected->_pos + pos * 100;
+		pos = selected->_pos + pos;
+
+		//pos *= selected->_radius;
+		//pos = pos - mCam.getCam().getEyePoint() + selected->_pos;
+	}
+}
+
+void planetsApp::keyUp(KeyEvent event) {
+	if (event.getCode() == KeyEvent::KEY_SPACE)
+		paused = !paused;
 
 }
 
 void planetsApp::update() {
-	/*Vec3f mEye = Vec3f(1000, 0, 0);
-	Vec3f mCenter = Vec3f::zero();
-	Vec3f mUp = Vec3f::zAxis();
-	
-	test.lookAt(mEye, mCenter, mUp);
-	mCam.setCurrentCam(test);*/
-		
-	cont.update();
+	cont.update(paused);
+	if (tracking) {
+		if (!selected) {
+			tracking = false;
+			return;
+		}
+			
+		mCam.getCam().setCenterOfInterestPoint(selected->_pos);
+
+		if (!paused)
+			mCam.getCam().setEyePoint(mCam.getCam().getEyePoint() + selected->_vel);
+	}
 }
 
 void planetsApp::draw() {
@@ -74,13 +117,26 @@ void planetsApp::draw() {
 	gl::color(Color(0,255,0));
 	gl::drawSphere(mCam.getCam().getCenterOfInterestPoint(), 10);
 
-
-	glInitNames();
-
 	cont.draw();
 
-	gl::color(Color(255,255,0));
-	gl::drawLine(start, dir*500);
+	if (selected) {
+		gl::color(Color(255,0,0));
+		gl::drawStrokedCube(selected->_pos, Vec3f(2,2,2) * selected->_radius);
+	}
+
+	gl::disableDepthRead();
+
+	if (selected) {
+		gl::color(Color(0,255,255));
+		gl::drawLine(selected->_pos, pos);
+		gl::color(Color(255,0,255));
+		gl::drawSphere(Vec3f(mCam.to2D(selected->_oldPos),0), 5);
+		
+	}
+	
+	
+
+
 }
 
 void planetsApp::doPicking() {

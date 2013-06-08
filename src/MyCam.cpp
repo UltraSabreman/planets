@@ -59,9 +59,9 @@ void MyCam::mouseDrag(Vec2f mousePos, bool isLeftDown, bool isRightDown) {
 void MyCam::updatePickingData() {
 	CameraPersp camera = _curCam;
 
-	_viewPlane = (camera.getCenterOfInterestPoint() - camera.getEyePoint()).safeNormalized();
-	_viewWidth = _viewPlane.cross(camera.getWorldUp()).safeNormalized();
-	_viewHight = _viewWidth.cross(_viewPlane).safeNormalized();
+	_viewDir = (camera.getCenterOfInterestPoint() - camera.getEyePoint()).safeNormalized();
+	_viewWidth = _viewDir.cross(camera.getWorldUp()).safeNormalized();
+	_viewHight = _viewWidth.cross(_viewDir).safeNormalized();
 
 
 	// convert fovy to radians 
@@ -72,6 +72,7 @@ void MyCam::updatePickingData() {
 	_viewHight *= vLength;
 	_viewWidth *= hLength;
 }
+
 void MyCam::getPickingRay(Vec2f mousePos, Vec3f &rayPos, Vec3f &rayDir) {
 	// translate mouse coordinates so that the origin lies in the center
 	// of the view port
@@ -83,16 +84,64 @@ void MyCam::getPickingRay(Vec2f mousePos, Vec3f &rayPos, Vec3f &rayDir) {
 
 	// linear combination to compute intersection of picking ray with
 	// view port plane
-	rayPos = _curCam.getEyePoint() + _viewPlane*_curCam.getNearClip() + _viewWidth*mousePos.x - _viewHight*mousePos.y;
+	rayPos = _curCam.getEyePoint() + _viewDir*_curCam.getNearClip() + _viewWidth*mousePos.x - _viewHight*mousePos.y;
 
 	// compute direction of picking ray by subtracting intersection point
 	// with camera position
 	rayDir = rayPos - _curCam.getEyePoint();
 }
-const CameraPersp& MyCam::getCam() const { 
+void MyCam::test(Vec2f mousePos, Vec3f &rayPos) {
+	// translate mouse coordinates so that the origin lies in the center
+	// of the view port
+	mousePos -= (getWindowBounds().getSize() / 2);
+
+	// scale mouse coordinates so that half the view port width and height
+	// becomes 1
+	mousePos /= (getWindowBounds().getSize() / 2);
+
+	// linear combination to compute intersection of picking ray with
+	// view port plane
+	rayPos = _curCam.getEyePoint() + _viewDir*_curCam.getNearClip() + _viewWidth*mousePos.x - _viewHight*mousePos.y;
+}
+
+
+CameraPersp& MyCam::getCam() { 
 	return _curCam; 
 }
 void MyCam::setCam(const CameraPersp &camIn ) { 
 	_curCam = camIn; 
 	updatePickingData();
 }	
+
+Vec2f MyCam::to2D(Vec3f pos) {
+	//transform world to clipping coordinates
+	Vec3f newPoint = _curCam.getProjectionMatrix() * _curCam.getModelViewMatrix() * pos;
+	//Vec2f test = newPoint.xy();
+	//Vec2f test2 = getWindowSize();
+	//Vec2f out = (test / 2) * test2;
+	//return out;
+
+	newPoint.x /= newPoint.z;
+    newPoint.y /= newPoint.z;
+	newPoint.x = (newPoint.x + 1) * getWindowSize().x / 2;
+    newPoint.y = (newPoint.y + 1) * getWindowSize().y / 2;
+	return Vec2f(newPoint.x, newPoint.y);
+    /*int winX = (int) Math.round((( point3D.getX() + 1 ) / 2.0) * width );
+    //we calculate -point3D.getY() because the screen Y axis is
+    //oriented top->down 
+    int winY = (int) Math.round((( 1 - point3D.getY() ) / 2.0) * height );
+    return new Point2D(winX, winY);*/
+}
+
+Vec3f MyCam::to3D(Vec2f pos) {
+/* 
+        double x = 2.0 * winX / clientWidth - 1;
+        double y = - 2.0 * winY / clientHeight + 1;
+        Matrix4 viewProjectionInverse = inverse(projectionMatrix *
+             viewMatrix);
+
+        Point3D point3D = new Point3D(x, y, 0); 
+        return viewProjectionInverse.multiply(point3D);
+*/
+	return Vec3f::zero();
+}

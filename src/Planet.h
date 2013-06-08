@@ -9,7 +9,7 @@ class Planet {
 public:
 	Planet(Vec3f inPos = Vec3f::zero(), float inMass = 0, float InDensity = 0);
 
-	void update();
+	void update(bool paused = false);
 	void draw();
 
 	bool isColliding(Planet *tarPlanet);
@@ -21,7 +21,6 @@ public:
 	//and add some modirator function or something.
 	Vec3f _pos, _oldPos, _accel, _vel, _force;
 	float _mass, _radius, _density;
-	bool _isDead, hit;
+	bool _isDead;
 private:
-
 };

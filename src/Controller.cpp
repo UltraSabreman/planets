@@ -8,9 +8,18 @@ void Controller::addRandomPlanet() {
 	_planets.push_back(new Planet(Rand::randVec3f() * 5000, Rand::randFloat(0,500000), 1));//Rand::randFloat()));
 }
 
-void Controller::update() {
-	//Do the "Physics" Tick.
+Planet *Controller::pickPlanet(Vec3f startPos, Vec3f dir) {
+	for (Planet *planet : _planets) 
+		if (planet->isHitByRay(startPos, dir)) {
+			_selected = planet;
+			return planet;
+		}
+	_selected = NULL;
+	return NULL;
+}
 
+void Controller::update(bool paused) {
+	//Do the "Physics" Tick.
 	//collisions
 	for (Planet *planet1 : _planets) {
 		Vec3f avgForce = planet1->_force;
@@ -31,23 +40,22 @@ void Controller::update() {
 	} 
 	remove_if(_planets.begin(), _planets.end(), [](Planet*p){ return p->_isDead; });
 
-	//Do Actual force calcs
-	for (Planet *planet1 : _planets) {
-		Vec3f avgForce = planet1->_force;
-		for (Planet *planet2 : _planets) {
-			if (!planet1 || !planet2 || planet1 == planet2) 
-				continue;
+	if (!paused) {
+		//Do Actual force calculations
+		for (Planet *planet1 : _planets) {
+			Vec3f avgForce = planet1->_force;
+			for (Planet *planet2 : _planets) {
+				if (!planet1 || !planet2 || planet1 == planet2) 
+					continue;
 
-			//Calculate unit direction vector form particle 1, to particle 2.
-			Vec3f dirVec = (planet1->_pos - planet2->_pos).safeNormalized();
-			//Get force vector using Newtons law of universal gravitation in vector form (G_ is the gravitational constant);
-			avgForce += -G * ((planet2->_mass * planet1->_mass) / pow(dirVec.length(), 2)) * dirVec;
-		}
-		 //set the force, make it visible.
-		//avgForce *= FORCE_MUL;
-		
-		//planet1->_force = avgForce;
-	} 
+				//Calculate unit direction vector form particle 1, to particle 2.
+				Vec3f dirVec = (planet1->_pos - planet2->_pos).safeNormalized();
+				//Get force vector using Newtons law of universal gravitation in vector form (G_ is the gravitational constant);
+				avgForce += -G * ((planet2->_mass * planet1->_mass) / pow(dirVec.length(), 2)) * dirVec;
+			}
+			planet1->_force = avgForce;
+		} 
+	}
 
 
 	//update the planets, and calc center of mass.
@@ -55,7 +63,7 @@ void Controller::update() {
 	float totalMass = 0;
 
 	for(Planet *planet : _planets){
-		planet->update();
+		planet->update(paused);
 		massPos += (planet->_mass * planet->_pos);
 		totalMass += planet->_mass;
 	}
@@ -70,14 +78,5 @@ void Controller::draw() {
 		gl::color(Color(0,0,255));
 		gl::drawCube(_massCenter, Vec3f(100,100,100));
 	}
-}
-
-Planet *Controller::pickPlanet(Vec3f startPos, Vec3f dir) {
-	for (Planet *planet : _planets) 
-		if (planet->isHitByRay(startPos, dir)) {
-			planet->hit = true;
-			return planet;
-		}
-	return NULL;
 }
 

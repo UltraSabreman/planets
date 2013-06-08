@@ -16,16 +16,19 @@ public:
 	void mouseWheel(float wheelSpin);
 	void mouseDrag(Vec2f mousePos, bool isLeftDown, bool isRightDown);
 	void getPickingRay(Vec2f mousePos, Vec3f &rayPos, Vec3f &rayDir);
+	void test(Vec2f mousePos, Vec3f &rayPos);
 
-	const CameraPersp& getCam() const;
+	Vec2f to2D(Vec3f pos);
+	Vec3f to3D(Vec2f pos);
+
+	CameraPersp& getCam();
 	void setCam(const CameraPersp &camIn);
 private:
+	void updatePickingData();
+
 	CameraPersp _curCam, _initCam;
 	Vec2f _oldMousePos;
 
-	void updatePickingData();
-
-	Vec3f _viewPlane, _viewHight, _viewWidth;
-	
+	Vec3f _viewDir, _viewHight, _viewWidth;
 };
 
