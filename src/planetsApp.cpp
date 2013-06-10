@@ -19,19 +19,20 @@ public:
 	void update();
 	void draw();
 
-	void doPicking();
 private:
 	Controller cont;
 	MyCam mCam;
 
 	Planet *selected;
-	bool doubleClick, tracking, paused;
+	bool doubleClick, tracking, paused, editMode;
 	float lastClickTime;
 
 	Vec3f pos;
+	Vec3f point1, point2, dir1, dir2;
 };
 
 void planetsApp::setup() {
+
 	pos = Vec3f::zero();
 	paused = false;
 	tracking = false;
@@ -61,9 +62,13 @@ void planetsApp::mouseUp(MouseEvent event) {
 	if (event.isLeft()) {
 		float curTime = getElapsedSeconds();
 		if (curTime - lastClickTime <= 0.25 && !doubleClick) {
+			doubleClick = true;
+
 			Vec3f start, dir;
 			mCam.getPickingRay(event.getPos(), start, dir);
 			selected = cont.pickPlanet(start, dir);
+			point1 = start;
+			dir1 = dir * 1000;
 
 			if (selected) 
 				tracking = true;
@@ -75,13 +80,29 @@ void planetsApp::mouseUp(MouseEvent event) {
 		lastClickTime = curTime;
 	}
 	
-	if(event.isRight() && selected) {
-		mCam.test(event.getPos(), pos);
-		//pos = selected->_pos + pos * 100;
-		pos = selected->_pos + pos;
+	if(event.isMiddle() && tracking) {
 
-		//pos *= selected->_radius;
-		//pos = pos - mCam.getCam().getEyePoint() + selected->_pos;
+		//Vec3f point1, point2, dir1, dir2;
+		mCam.getPickingRay(event.getPos(), point1, dir1);
+		point2 = selected->_pos;
+		dir2 = point2 + (point1 - mCam.getCam().getEyePoint());
+
+		dir2 = dir2*100;
+		dir1 = dir1*100;
+
+		//dir2.normalize(); dir1.normalize();
+		//pos = dir2 * 100;
+
+		/*Vec3f testa = dir1.cross(dir2);
+		Vec3f testb = (point1 - point2).cross(dir2);
+
+		Vec3f fin = testb/testa;
+
+		//if (fin.x == fin.y == fin.z) {
+			pos = point1 + (fin.x * point2);
+		//}
+		*/
+
 	}
 }
 
@@ -110,37 +131,29 @@ void planetsApp::draw() {
 	gl::clear(Color(0, 0, 0)); 
 
 	gl::enableDepthRead();
-
+	gl::enableDepthWrite();
 	gl::setMatrices(mCam.getCam());
+
 	gl::color(Color(255,0,0));
-	gl::drawSphere(Vec3f::zero(), 10);
+	gl::drawSphere(Vec3f::zero(), 5);
 	gl::color(Color(0,255,0));
-	gl::drawSphere(mCam.getCam().getCenterOfInterestPoint(), 10);
+	gl::drawSphere(mCam.getCam().getCenterOfInterestPoint(), 5);
 
 	cont.draw();
 
 	if (selected) {
 		gl::color(Color(255,0,0));
 		gl::drawStrokedCube(selected->_pos, Vec3f(2,2,2) * selected->_radius);
-	}
-
-	gl::disableDepthRead();
-
-	if (selected) {
-		gl::color(Color(0,255,255));
-		gl::drawLine(selected->_pos, pos);
-		gl::color(Color(255,0,255));
-		gl::drawSphere(Vec3f(mCam.to2D(selected->_oldPos),0), 5);
 		
+		gl::color(Color(0,255,255));
+		gl::drawLine(point1, dir1);	
+		gl::drawLine(point2, dir2);	
 	}
-	
-	
 
-
+	gl::popMatrices();
+	gl::disableDepthRead();
+	gl::disableDepthWrite();	
 }
 
-void planetsApp::doPicking() {
-
-}
 
 CINDER_APP_NATIVE(planetsApp, RendererGl)

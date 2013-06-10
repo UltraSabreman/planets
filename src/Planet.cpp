@@ -56,4 +56,12 @@ void Planet::draw() {
 
 	gl::color(Color(255,255,255));
 	gl::drawSphere(_pos, _radius);
+
+	if( true) {
+		gl::color(Color(255,0,0));
+		gl::drawLine(_pos, _pos + _vel);
+		//gl::color(Color(0,255,0));
+		//gl::drawLine(_pos, _pos + _force);
+
+	}
 }

@@ -6,7 +6,7 @@ MyCam::MyCam() {
 
 MyCam::MyCam(const CameraPersp &inputInitCam) {
 	_initCam = _curCam = inputInitCam; 
-	updatePickingData();
+	update();
 }
 
 void MyCam::mouseWheel(float wheelSpin) {
@@ -90,7 +90,7 @@ void MyCam::getPickingRay(Vec2f mousePos, Vec3f &rayPos, Vec3f &rayDir) {
 	// with camera position
 	rayDir = rayPos - _curCam.getEyePoint();
 }
-void MyCam::test(Vec2f mousePos, Vec3f &rayPos) {
+void MyCam::test(Vec2f mousePos, Vec3f &rayPos, Vec3f &out) {
 	// translate mouse coordinates so that the origin lies in the center
 	// of the view port
 	mousePos -= (getWindowBounds().getSize() / 2);
@@ -101,7 +101,8 @@ void MyCam::test(Vec2f mousePos, Vec3f &rayPos) {
 
 	// linear combination to compute intersection of picking ray with
 	// view port plane
-	rayPos = _curCam.getEyePoint() + _viewDir*_curCam.getNearClip() + _viewWidth*mousePos.x - _viewHight*mousePos.y;
+	rayPos = _curCam.getEyePoint() + _viewWidth*mousePos.x - _viewHight*mousePos.y;
+	out = _curCam.getEyePoint();
 }
 
 
@@ -110,8 +111,12 @@ CameraPersp& MyCam::getCam() {
 }
 void MyCam::setCam(const CameraPersp &camIn ) { 
 	_curCam = camIn; 
-	updatePickingData();
+	update();
 }	
+
+void MyCam::update() {
+	updatePickingData();
+}
 
 Vec2f MyCam::to2D(Vec3f pos) {
 	//transform world to clipping coordinates
