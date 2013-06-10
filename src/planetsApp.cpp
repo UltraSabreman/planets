@@ -1,6 +1,5 @@
 #include <cinder\app\AppNative.h>
 #include <cinder\gl\gl.h>
-#include <cinder\MayaCamUI.h>
 
 #include "Controller.h"
 #include "MyCam.h"
@@ -82,27 +81,6 @@ void planetsApp::mouseUp(MouseEvent event) {
 	
 	if(event.isMiddle() && tracking) {
 
-		//Vec3f point1, point2, dir1, dir2;
-		mCam.getPickingRay(event.getPos(), point1, dir1);
-		point2 = selected->_pos;
-		dir2 = point2 + (point1 - mCam.getCam().getEyePoint());
-
-		dir2 = dir2*100;
-		dir1 = dir1*100;
-
-		//dir2.normalize(); dir1.normalize();
-		//pos = dir2 * 100;
-
-		/*Vec3f testa = dir1.cross(dir2);
-		Vec3f testb = (point1 - point2).cross(dir2);
-
-		Vec3f fin = testb/testa;
-
-		//if (fin.x == fin.y == fin.z) {
-			pos = point1 + (fin.x * point2);
-		//}
-		*/
-
 	}
 }
 
@@ -114,16 +92,19 @@ void planetsApp::keyUp(KeyEvent event) {
 
 void planetsApp::update() {
 	cont.update(paused);
+
 	if (tracking) {
 		if (!selected) {
 			tracking = false;
 			return;
 		}
 			
-		mCam.getCam().setCenterOfInterestPoint(selected->_pos);
+		
 
-		if (!paused)
+		if (!paused) {
+			mCam.getCam().setCenterOfInterestPoint(selected->_pos);
 			mCam.getCam().setEyePoint(mCam.getCam().getEyePoint() + selected->_vel);
+		}
 	}
 }
 

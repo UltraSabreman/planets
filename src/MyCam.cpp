@@ -37,19 +37,25 @@ void MyCam::mouseDrag(Vec2f mousePos, bool isLeftDown, bool isRightDown) {
 			nDeltaPos /= 15; //magic aswell, same as above.
 			float deltaX = -nDeltaPos.x;
 			float deltaY = nDeltaPos.y;
-			Vec3f mW = _curCam.getViewDirection().normalized();
-			bool invertMotion = (_curCam.getOrientation() * Vec3f::yAxis()).y < 0.0f;
-			Vec3f mU = Vec3f::yAxis().cross(mW).normalized();
+			Vec3f mW = _curCam.getViewDirection().normalized(); //Get vie dir
+			bool invertMotion = (_curCam.getOrientation() * Vec3f::yAxis()).y < 0.0f; //figure out if we need to flip input
+			Vec3f mU = Vec3f::yAxis().cross(mW).normalized(); //get the horizontal axis that's perpendicular to my view dir
+			// and the "up" axis, this lets us pitch the camera.
 
-			if( invertMotion ) {
+			/*if( invertMotion ) { //invert?
 				deltaX = -deltaX;
 				deltaY = -deltaY;
-			}
+			}*/
 
+			//rotate the view vecgtor verticly
 			Vec3f rotatedVec = Quatf(mU, deltaY) * (_curCam.getEyePoint() - _curCam.getCenterOfInterestPoint());
+			//rotate the view vector horizontaly
 			rotatedVec = Quatf(Vec3f::yAxis(), deltaX) * rotatedVec;
 
+			//set the new eye point, using the rotated vector.
 			_curCam.setEyePoint(_curCam.getCenterOfInterestPoint() + rotatedVec);
+
+			//set the camera orientation (aka the viewing angle) the same way.
 			_curCam.setOrientation(_curCam.getOrientation() * Quatf(mU, deltaY) * Quatf(Vec3f::yAxis(), deltaX));
 		}
 		_oldMousePos = mousePos;
@@ -89,20 +95,6 @@ void MyCam::getPickingRay(Vec2f mousePos, Vec3f &rayPos, Vec3f &rayDir) {
 	// compute direction of picking ray by subtracting intersection point
 	// with camera position
 	rayDir = rayPos - _curCam.getEyePoint();
-}
-void MyCam::test(Vec2f mousePos, Vec3f &rayPos, Vec3f &out) {
-	// translate mouse coordinates so that the origin lies in the center
-	// of the view port
-	mousePos -= (getWindowBounds().getSize() / 2);
-
-	// scale mouse coordinates so that half the view port width and height
-	// becomes 1
-	mousePos /= (getWindowBounds().getSize() / 2);
-
-	// linear combination to compute intersection of picking ray with
-	// view port plane
-	rayPos = _curCam.getEyePoint() + _viewWidth*mousePos.x - _viewHight*mousePos.y;
-	out = _curCam.getEyePoint();
 }
 
 

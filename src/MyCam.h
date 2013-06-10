@@ -16,7 +16,6 @@ public:
 	void mouseWheel(float wheelSpin);
 	void mouseDrag(Vec2f mousePos, bool isLeftDown, bool isRightDown);
 	void getPickingRay(Vec2f mousePos, Vec3f &rayPos, Vec3f &rayDir);
-	void test(Vec2f mousePos, Vec3f &rayPos, Vec3f &);
 	void update();
 
 	Vec2f to2D(Vec3f pos);
