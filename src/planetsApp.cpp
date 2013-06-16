@@ -1,8 +1,10 @@
 #include <cinder\app\AppNative.h>
 #include <cinder\gl\gl.h>
+#include <cinder\Camera.h>
 
 #include "Controller.h"
 #include "MyCam.h"
+#include "uiMain.h"
 
 using namespace ci;
 using namespace ci::app;
@@ -22,29 +24,35 @@ private:
 	Controller cont;
 	MyCam mCam;
 
+	Ui *test;
+
 	Planet *selected;
 	bool doubleClick, tracking, paused, editMode;
 	float lastClickTime;
-
-	Vec3f pos;
-	Vec3f point1, point2, dir1, dir2;
 };
 
 void planetsApp::setup() {
 
-	pos = Vec3f::zero();
 	paused = false;
 	tracking = false;
 	doubleClick = false;
 	lastClickTime = 0;
 	selected = NULL;
 
-	CameraPersp test;
-	test.setPerspective(90.0f, getWindowAspectRatio(), 3.0f, 100000.0f);
-	mCam.setCam(test);
+	CameraPersp h;
+	h.setPerspective(90.0f, getWindowAspectRatio(), 3.0f, 100000.0f);
+	mCam.setCam(h);
 
 	for (int i = 0; i < 30; i++)
 		cont.addRandomPlanet();
+
+	test = new Ui(getWindowAspectRatio());
+	Menu *lol = new Menu();
+	lol->setPos(Vec2f(0,0));
+	lol->setSize(Vec2f(30,30));
+	lol->setColor(ColorA(1.0,0.5,0.0,0.5));
+	
+	test->addElement(lol);
 }
 
 void planetsApp::mouseDrag(MouseEvent event) {
@@ -59,15 +67,13 @@ void planetsApp::mouseWheel(MouseEvent event) {
 
 void planetsApp::mouseUp(MouseEvent event) {
 	if (event.isLeft()) {
-		float curTime = getElapsedSeconds();
+		double curTime = getElapsedSeconds();
 		if (curTime - lastClickTime <= 0.25 && !doubleClick) {
 			doubleClick = true;
 
 			Vec3f start, dir;
 			mCam.getPickingRay(event.getPos(), start, dir);
 			selected = cont.pickPlanet(start, dir);
-			point1 = start;
-			dir1 = dir * 1000;
 
 			if (selected) 
 				tracking = true;
@@ -100,10 +106,9 @@ void planetsApp::update() {
 		}
 			
 		
-
 		if (!paused) {
-			mCam.getCam().setCenterOfInterestPoint(selected->_pos);
-			mCam.getCam().setEyePoint(mCam.getCam().getEyePoint() + selected->_vel);
+			mCam.getCam().setCenterOfInterestPoint(selected->getPos());
+			mCam.getCam().setEyePoint(mCam.getCam().getEyePoint() + selected->getVel());
 		}
 	}
 }
@@ -124,16 +129,15 @@ void planetsApp::draw() {
 
 	if (selected) {
 		gl::color(Color(255,0,0));
-		gl::drawStrokedCube(selected->_pos, Vec3f(2,2,2) * selected->_radius);
-		
-		gl::color(Color(0,255,255));
-		gl::drawLine(point1, dir1);	
-		gl::drawLine(point2, dir2);	
+		gl::drawStrokedCube(selected->getPos(), Vec3f(2,2,2) * selected->getRadius());
 	}
-
-	gl::popMatrices();
+	
 	gl::disableDepthRead();
-	gl::disableDepthWrite();	
+	gl::disableDepthWrite();
+
+	test->draw();
+
+	gl::popMatrices();	
 }
 
 

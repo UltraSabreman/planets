@@ -22,38 +22,38 @@ void Controller::update(bool paused) {
 	//Do the "Physics" Tick.
 	//collisions
 	for (Planet *planet1 : _planets) {
-		Vec3f avgForce = planet1->_force;
+		Vec3f avgForce = planet1->getForce();
 		for (Planet *planet2 : _planets) {
-			if (planet1->_isDead || planet2->_isDead  || planet1 == planet2) 
+			if (planet1->isDead() || planet2->isDead()  || planet1 == planet2) 
 				continue;
 
 			if (planet1->isColliding(planet2)) {
-				if (planet1->_mass > planet2->_mass) {
+				if (planet1->getMass() > planet2->getMass()) {
 					planet1->absorb(planet2);
-					planet2->_isDead = true;
+					planet2->setDead(true);
 				}else { //do some sort of "bounce" if they are equal in mass?
 					planet2->absorb(planet1);
-					planet1->_isDead = false;
+					planet1->setDead(true);
 				}
 			}
 		}
 	} 
-	remove_if(_planets.begin(), _planets.end(), [](Planet*p){ return p->_isDead; });
+	remove_if(_planets.begin(), _planets.end(), [](Planet*p){ return p->isDead(); });
 
 	if (!paused) {
 		//Do Actual force calculations
 		for (Planet *planet1 : _planets) {
-			Vec3f avgForce = planet1->_force;
+			Vec3f avgForce = planet1->getForce();
 			for (Planet *planet2 : _planets) {
 				if (!planet1 || !planet2 || planet1 == planet2) 
 					continue;
 
 				//Calculate unit direction vector form particle 1, to particle 2.
-				Vec3f dirVec = (planet1->_pos - planet2->_pos).safeNormalized();
+				Vec3f dirVec = (planet1->getPos() - planet2->getPos()).safeNormalized();
 				//Get force vector using Newtons law of universal gravitation in vector form (G_ is the gravitational constant);
-				avgForce += -G * ((planet2->_mass * planet1->_mass) / pow(dirVec.length(), 2)) * dirVec;
+				avgForce += -G * ((planet2->getMass() * planet1->getMass()) / pow(dirVec.length(), 2)) * dirVec;
 			}
-			planet1->_force = avgForce;
+			planet1->setForce(avgForce);
 		} 
 	}
 
@@ -64,8 +64,8 @@ void Controller::update(bool paused) {
 
 	for(Planet *planet : _planets){
 		planet->update(paused);
-		massPos += (planet->_mass * planet->_pos);
-		totalMass += planet->_mass;
+		massPos += (planet->getMass() * planet->getMass());
+		totalMass += planet->getMass();
 	}
 
 	if (totalMass > 0)

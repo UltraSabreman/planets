@@ -107,16 +107,20 @@
     <ResourceCompile Include="Resources.rc" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\src\menu.cpp" />
     <ClCompile Include="..\src\MyCam.cpp" />
     <ClCompile Include="..\src\Controller.cpp" />
     <ClCompile Include="..\src\Planet.cpp" />
     <ClCompile Include="..\src\planetsApp.cpp" />
+    <ClCompile Include="..\src\uiMain.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\include\Resources.h" />
+    <ClInclude Include="..\src\menu.h" />
     <ClInclude Include="..\src\MyCam.h" />
     <ClInclude Include="..\src\Controller.h" />
     <ClInclude Include="..\src\Planet.h" />
+    <ClInclude Include="..\src\uiMain.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets" />

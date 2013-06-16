@@ -1,6 +1,7 @@
 #pragma once
 #include <cinder\app\AppNative.h>
 #include <cinder\Camera.h>
+
 #define E 2.71828183f
 #define PI 3.14159
 

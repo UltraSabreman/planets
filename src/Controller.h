@@ -1,5 +1,4 @@
 #pragma once
-#include <cinder\app\AppNative.h>
 #include <cinder\Rand.h>
 #include <list>
 
@@ -10,7 +9,6 @@
 
 
 using namespace ci;
-using namespace ci::app;
 using namespace std;
 
 class Controller {
