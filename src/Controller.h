@@ -1,6 +1,7 @@
 #pragma once
 #include <cinder\Rand.h>
 #include <list>
+#include <time.h>
 
 #include "Planet.h"
 

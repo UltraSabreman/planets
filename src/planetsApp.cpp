@@ -1,6 +1,7 @@
 #include <cinder\app\AppNative.h>
 #include <cinder\gl\gl.h>
 #include <cinder\Camera.h>
+#include <cinder\ImageIo.h>
 
 #include "Controller.h"
 #include "MyCam.h"
@@ -15,7 +16,9 @@ public:
 	void setup();
 	void mouseWheel(MouseEvent);	
 	void mouseDrag(MouseEvent);
+	void mouseDown(MouseEvent);
 	void mouseUp(MouseEvent);
+	void mouseMove(MouseEvent);
 	void keyUp(KeyEvent);
 	void update();
 	void draw();
@@ -40,25 +43,48 @@ void planetsApp::setup() {
 	selected = NULL;
 
 	CameraPersp h;
-	h.setPerspective(90.0f, getWindowAspectRatio(), 3.0f, 100000.0f);
+	h.setPerspective(75.0f, getWindowAspectRatio(), 3.0f, 100000.0f);
 	mCam.setCam(h);
 
 	for (int i = 0; i < 30; i++)
 		cont.addRandomPlanet();
 
-	test = new Ui(getWindowAspectRatio());
+	test = new Ui(getWindowSize());
 	Menu *lol = new Menu();
-	lol->setPos(Vec2f(0,0));
-	lol->setSize(Vec2f(30,30));
-	lol->setColor(ColorA(1.0,0.5,0.0,0.5));
+	lol->setPos(Vec2f(0, 0));
+	lol->setSize(Vec2f(100,100));
+	lol->setColor(ColorA(1,0,0,1));
+	lol->setColorHover(ColorA(0,1,0,1));
+	lol->setColorPress(ColorA(0,0,1,1));
+	gl::Texture *tex = new gl::Texture(loadImage(loadAsset("but.png")));
+	gl::Texture *tex2 = new gl::Texture(loadImage(loadAsset("but2.png")));
+	lol->setTexture(tex);
+	lol->setTexturePress(tex2);
+	
+	Menu *rofl = new Menu(lol);
+	rofl->setRelativePos(Vec2f(20, 20));
+	rofl->setSize(Vec2f(30,30));
+	rofl->setColor(ColorA(1,1,0,1));
+	rofl->setColorHover(ColorA(0,1,0,1));
+	rofl->setColorPress(ColorA(0,1,1,1));
 	
 	test->addElement(lol);
+	test->addElement(rofl);
 }
 
 void planetsApp::mouseDrag(MouseEvent event) {
+	test->onMouseDrag(event);
 	mCam.mouseDrag(event.getPos(), event.isLeftDown(), event.isRightDown());
 	if (event.isRightDown() && tracking)
 		tracking = false;
+}
+
+void planetsApp::mouseDown(MouseEvent event) {
+	test->onMouseDown(event);
+}
+
+void planetsApp::mouseMove(MouseEvent event) {
+	test->onMouseMove(event);
 }
 
 void planetsApp::mouseWheel(MouseEvent event) {
@@ -66,7 +92,11 @@ void planetsApp::mouseWheel(MouseEvent event) {
 }
 
 void planetsApp::mouseUp(MouseEvent event) {
+	
+
 	if (event.isLeft()) {
+		test->onMouseUp(event);
+
 		double curTime = getElapsedSeconds();
 		if (curTime - lastClickTime <= 0.25 && !doubleClick) {
 			doubleClick = true;
@@ -98,6 +128,7 @@ void planetsApp::keyUp(KeyEvent event) {
 
 void planetsApp::update() {
 	cont.update(paused);
+	test->update();
 
 	if (tracking) {
 		if (!selected) {

@@ -1,10 +1,12 @@
 #include "Controller.h"
 
+
 Controller::Controller() {
 	_massCenter = Vec3f::zero();
 }
 
 void Controller::addRandomPlanet() {
+	Rand::randSeed(time(NULL));
 	_planets.push_back(new Planet(Rand::randVec3f() * 5000, Rand::randFloat(0,500000), 1));//Rand::randFloat()));
 }
 
