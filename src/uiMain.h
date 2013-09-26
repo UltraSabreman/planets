@@ -17,20 +17,32 @@ public:
 	void update();
 	void draw();
 
-	void addElement(Menu *l) { _elements.push_back(l); }
+	int addElement(Menu *l) { _elements.push_back(l); return _elements.size() - 1; }
+	Menu *getElement(int i) { return _elements.at(i); }
 
-	void onMouseDown(MouseEvent e) { for (Menu* m:_elements) m->onMouseDown(e); }
-	void onMouseUp(MouseEvent e) { for (Menu* m:_elements) m->onMouseUp(e); }
-	void onMouseDrag(MouseEvent e) { for (Menu* m:_elements) m->onMouseDrag(e); }
-	void onMouseWheel(MouseEvent e) { for (Menu* m:_elements) m->onMouseWheel(e); }
-	void onMouseMove(MouseEvent e) { for (Menu* m:_elements) m->onMouseMove(e); }
+	void onMouseDown(MouseEvent e) { if (_selected) _selected->onMouseDown(e); }
+	void onMouseUp(MouseEvent e) { if (_selected) _selected->onMouseUp(e);}
+	void onMouseDrag(MouseEvent e) { if (_selected) _selected->onMouseDrag(e);}
+	void onMouseWheel(MouseEvent e) { if (_selected) _selected->onMouseWheel(e); }
 
-	void onKeyDown(KeyEvent e) { for (Menu* m:_elements) m->onKeyDown(e); }
-	void onKeyUp(KeyEvent e) { for (Menu* m:_elements) m->onKeyUp(e); }
+	void onMouseMove(MouseEvent e) { getSelected(e.getPos()); if (_selected) _selected->onMouseMove(e); }
+
+	void onKeyDown(KeyEvent e);
+	void onKeyUp(KeyEvent e);
+
+	bool focus();
+	bool takeInput() { return _grabInput; }
 
 private:
-	Vec2i _size;
+	Menu* getSelected(Vec2f i);
+
+	Vec2i _size, _mousePos;
+
+	bool _grabInput;
+
+	string _newMeta, _oldMeta;
 
 	vector<Menu*> _elements;
+	Menu *_selected;
 
 };

@@ -29,6 +29,8 @@ private:
 
 	Ui *test;
 
+	int number, pause;
+
 	Planet *selected;
 	bool doubleClick, tracking, paused, editMode;
 	float lastClickTime;
@@ -56,24 +58,28 @@ void planetsApp::setup() {
 	lol->setColor(ColorA(1,0,0,1));
 	lol->setColorHover(ColorA(0,1,0,1));
 	lol->setColorPress(ColorA(0,0,1,1));
-	gl::Texture *tex = new gl::Texture(loadImage(loadAsset("but.png")));
+	/*gl::Texture *tex = new gl::Texture(loadImage(loadAsset("but.png")));
 	gl::Texture *tex2 = new gl::Texture(loadImage(loadAsset("but2.png")));
 	lol->setTexture(tex);
-	lol->setTexturePress(tex2);
+	lol->setTexturePress(tex2);*/
 	
 	Menu *rofl = new Menu(lol);
 	rofl->setRelativePos(Vec2f(20, 20));
 	rofl->setSize(Vec2f(30,30));
-	rofl->setColor(ColorA(1,1,0,1));
-	rofl->setColorHover(ColorA(0,1,0,1));
-	rofl->setColorPress(ColorA(0,1,1,1));
+	rofl->setColor(ColorA(0,0,0,1));
+	rofl->setColorHover(ColorA(0.1,0.1,0.1,1));
+	rofl->setColorPress(ColorA(0.2,0.2,0.2,1));
+	rofl->setIsMovable(Menu::UI_MOVE_NONE);
+	rofl->setMetadata("Lolol");
 	
-	test->addElement(lol);
-	test->addElement(rofl);
+	
+	pause = test->addElement(lol);
+	number = test->addElement(rofl);
 }
 
 void planetsApp::mouseDrag(MouseEvent event) {
-	test->onMouseDrag(event);
+	if (test->onMouseDrag(event)) return;
+
 	mCam.mouseDrag(event.getPos(), event.isLeftDown(), event.isRightDown());
 	if (event.isRightDown() && tracking)
 		tracking = false;
@@ -95,7 +101,7 @@ void planetsApp::mouseUp(MouseEvent event) {
 	
 
 	if (event.isLeft()) {
-		test->onMouseUp(event);
+		if (test->onMouseUp(event) ) return;
 
 		double curTime = getElapsedSeconds();
 		if (curTime - lastClickTime <= 0.25 && !doubleClick) {
@@ -127,6 +133,14 @@ void planetsApp::keyUp(KeyEvent event) {
 }
 
 void planetsApp::update() {
+
+	if (test->getElement(number)->wasClicked()) {
+		cont.addRandomPlanet();
+	}
+	if (test->getElement(pause)->wasClicked()) {
+		paused = !paused;
+	}
+
 	cont.update(paused);
 	test->update();
 
